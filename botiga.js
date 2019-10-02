@@ -178,10 +178,8 @@ productesCategoria = (nomCategoria) => {
 	}
 };
 
-/*
 let cercaPreusProducte;
 
-cercaPreusProducte = (preuInf, PreuSup) => {
-	db.productes.find
+cercaPreusProducte = (preuInf, preuSup) => {
+	return db.productes.find ({"preu" : {"$gte" : preuInf}, "preu" : {"$lte" : preuSup}});
 };
-*/
