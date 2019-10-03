@@ -65,7 +65,7 @@ db.productes.insertMany([
 		"detalls": "Nisi ea nulla veniam aliqua. Laborum voluptate commodo nulla incididunt nisi exercitation dolore velit exercitation sint est sunt. Dolore veniam non dolore aliqua et. Ea veniam commodo anim tempor amet pariatur et ea anim voluptate quis cupidatat ut. Deserunt occaecat mollit amet nulla dolor commodo in laboris commodo irure enim ex amet. Laboris minim magna ullamco duis est laborum in.\r\n",
 		"categoria_id":"CD2", "fabricant":"Fabricant 9", "preu":13100, "stock": 2},
 	{"_id":"CD010", "nom":"Arpa 1", 
-		"detalls": "Culpa cillum quis nostrud labore id. Cillum incididunt officia nisi quis nulla nostrud. Ut ut cillum incididunt incididunt.\r\n"
+		"detalls": "Culpa cillum quis nostrud labore id. Cillum incididunt officia nisi quis nulla nostrud. Ut ut cillum incididunt incididunt.\r\n",
 		"categoria_id":"CD3", "fabricant":"Fabricant 1", "preu":6780, "stock": 3},
 	{"_id":"CD011", "nom":"Arpa 2", 
 		"detalls": "Consequat est qui duis duis tempor qui. Laborum in occaecat dolor sit. Est nostrud duis veniam aute tempor consectetur occaecat ea laboris in cillum in. Non irure consequat culpa est do Lorem ullamco nisi ad.\r\n",
@@ -94,7 +94,7 @@ db.productes.insertMany([
 	{"_id":"VT008", "nom":"Tuba 1", 
 		"detalls": "Minim incididunt fugiat excepteur in ut ut duis proident et laborum. Est ad nulla aliqua quis. Proident commodo magna velit dolore consequat qui eu labore fugiat nostrud ad incididunt enim anim.\r\n",
 		"categoria_id":"VT2", "fabricant":"Fabricant 13", "preu":2220, "stock": 1}
-]);
+])
 
 db.usuaris.insertMany([
   {"_id": 1, "nom": "Campos Summers", "correu_e": "campossummers@interloo.com"},
