@@ -1,27 +1,15 @@
-#### Ejercicio entregable
+#### Mongo Ecommerce Fran
 ---
 
-__Entregable__
+__Conexión a base de datos Mongo Atlas__
 
-Sigue los siguientes pasos:
-1. clona el repositorio a tu directorio de trabajo local
-```script
-git clone https://github.com/bcncodes-training/mongo-ecommerce.git
-```
-2. haz el _checkout_ de la rama asignada:
-```script
-git checkout "pair"+numero
-```
-3. genera los documentos demandados:
-  - mongodump de la bd (documentos+datos+índices)
-  - queries.js con la información de las queries y los índices creados
+SHELL -> mongo "mongodb+srv://eommerce-3f5ka.mongodb.net/admin"  --username fparrar
+COMPASS -> mongodb+srv://fparrar:<password>@eommerce-3f5ka.mongodb.net/admin
+ROBO 3T OR OTHER APPLICATION -> <FROM_SRV PARAMETER> --> mongodb+srv://fparrar:<password>@eommerce-3f5ka.mongodb.net/admin?retryWrites=true&w=majority
 
-4. sube los cambios:
-```script
-  git add .
-  git commit -m 'msg'
-  git push nombre_rama
- ```
+Password enviada por pull request. 
+
+
 __Ejercicio__
 
 - Crear una bd para un ecommerce que contenga las siguientes colecciones:
