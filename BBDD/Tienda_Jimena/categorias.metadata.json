@@ -1,0 +1,1 @@
+{"options":{},"indexes":[{"v":{"$numberInt":"2"},"key":{"_id":{"$numberInt":"1"}},"name":"_id_","ns":"Tienda_Jimena.categorias"}],"uuid":"246b23cc62a04133a94e53c7dbfb8e4e"}
