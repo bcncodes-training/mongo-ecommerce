@@ -1,5 +1,6 @@
 - queries.js con la información de las queries y los índices creados
 
+	
 
  - Generar consultas sobre las colecciones anteriores para llevar a cabo las siguientes operaciones:
   
@@ -10,6 +11,155 @@
     // Productos con oferta
 
       db.productos.find({oferta:true}).pretty()
+	  
+//Medicion previa SIN Indeces Productos:
+	  
+	  > db.productos.find({oferta:true}).explain("executionStats")
+{
+        "queryPlanner" : {
+                "plannerVersion" : 1,
+                "namespace" : "Tienda_Jimena.productos",
+                "indexFilterSet" : false,
+                "parsedQuery" : {
+                        "oferta" : {
+                                "$eq" : true
+                        }
+                },
+                "queryHash" : "08E0E71A",
+                "planCacheKey" : "08E0E71A",
+                "winningPlan" : {
+                        "stage" : "COLLSCAN",
+                        "filter" : {
+                                "oferta" : {
+                                        "$eq" : true
+                                }
+                        },
+                        "direction" : "forward"
+                },
+                "rejectedPlans" : [ ]
+        },
+        "executionStats" : {
+                "executionSuccess" : true,
+                "nReturned" : 168,
+                "executionTimeMillis" : 0,
+                "totalKeysExamined" : 0,
+                "totalDocsExamined" : 331,
+                "executionStages" : {
+                        "stage" : "COLLSCAN",
+                        "filter" : {
+                                "oferta" : {
+                                        "$eq" : true
+                                }
+                        },
+                        "nReturned" : 168,
+                        "executionTimeMillisEstimate" : 0,
+                        "works" : 333,
+                        "advanced" : 168,
+                        "needTime" : 164,
+                        "needYield" : 0,
+                        "saveState" : 2,
+                        "restoreState" : 2,
+                        "isEOF" : 1,
+                        "direction" : "forward",
+                        "docsExamined" : 331
+                }
+        },
+        "serverInfo" : {
+                "host" : "DESKTOP-70596F9",
+                "port" : 27017,
+                "version" : "4.2.0",
+                "gitVersion" : "a4b751dcf51dd249c5865812b390cfd1c0129c30"
+        },
+        "ok" : 1
+}
+
+	> db.productos.createIndex({"SKU":1,"oferta":1});
+{
+        "createdCollectionAutomatically" : false,
+        "numIndexesBefore" : 1,
+        "numIndexesAfter" : 2,
+        "ok" : 1
+}
+	//Con Index
+	> db.productos.find({oferta:true}).explain("executionStats")
+{
+        "queryPlanner" : {
+                "plannerVersion" : 1,
+                "namespace" : "Tienda_Jimena.productos",
+                "indexFilterSet" : false,
+                "parsedQuery" : {
+                        "oferta" : {
+                                "$eq" : true
+                        }
+                },
+                "queryHash" : "08E0E71A",
+                "planCacheKey" : "A2610016",
+                "winningPlan" : {
+                        "stage" : "COLLSCAN",
+                        "filter" : {
+                                "oferta" : {
+                                        "$eq" : true
+                                }
+                        },
+                        "direction" : "forward"
+                },
+                "rejectedPlans" : [ ]
+        },
+        "executionStats" : {
+                "executionSuccess" : true,
+                "nReturned" : 168,
+                "executionTimeMillis" : 0,
+                "totalKeysExamined" : 0,
+                "totalDocsExamined" : 331,
+                "executionStages" : {
+                        "stage" : "COLLSCAN",
+                        "filter" : {
+                                "oferta" : {
+                                        "$eq" : true
+                                }
+                        },
+                        "nReturned" : 168,
+                        "executionTimeMillisEstimate" : 0,
+                        "works" : 333,
+                        "advanced" : 168,
+                        "needTime" : 164,
+                        "needYield" : 0,
+                        "saveState" : 2,
+                        "restoreState" : 2,
+                        "isEOF" : 1,
+                        "direction" : "forward",
+                        "docsExamined" : 331
+                }
+        },
+        "serverInfo" : {
+                "host" : "DESKTOP-70596F9",
+                "port" : 27017,
+                "version" : "4.2.0",
+                "gitVersion" : "a4b751dcf51dd249c5865812b390cfd1c0129c30"
+        },
+        "ok" : 1
+}
+
+	> db.productos.getIndexes()
+[
+        {
+                "v" : 2,
+                "key" : {
+                        "_id" : 1
+                },
+                "name" : "_id_",
+                "ns" : "Tienda_Jimena.productos"
+        },
+        {
+                "v" : 2,
+                "key" : {
+                        "SKU" : 1,
+                        "oferta" : 1
+                },
+                "name" : "SKU_1_oferta_1",
+                "ns" : "Tienda_Jimena.productos"
+        }
+]
 
       /* Cuantos productos en oferta */
       db.productos.find({oferta:true}).count()
@@ -44,10 +194,241 @@
             { "SKU" : 19, "nombre" : "PC ATX 940", "id_categoria" : [ 1, 1 ], "precio" : "1657.75", "cantidad" : 485 }
 
 
+	//Medicion sin Indices
+	> db.productos.find({},{_id:0, SKU:"SKU",nombre:"nombre",id_categoria:"id_categoria",precio:"precio",cantidad:"cantidad"}).explain("executionStats")
+{
+        "queryPlanner" : {
+                "plannerVersion" : 1,
+                "namespace" : "Tienda_Jimena.productos",
+                "indexFilterSet" : false,
+                "parsedQuery" : {
+
+                },
+                "queryHash" : "1E11F942",
+                "planCacheKey" : "1E11F942",
+                "winningPlan" : {
+                        "stage" : "PROJECTION_SIMPLE",
+                        "transformBy" : {
+                                "_id" : 0,
+                                "SKU" : "SKU",
+                                "nombre" : "nombre",
+                                "id_categoria" : "id_categoria",
+                                "precio" : "precio",
+                                "cantidad" : "cantidad"
+                        },
+                        "inputStage" : {
+                                "stage" : "COLLSCAN",
+                                "direction" : "forward"
+                        }
+                },
+                "rejectedPlans" : [ ]
+        },
+        "executionStats" : {
+                "executionSuccess" : true,
+                "nReturned" : 331,
+                "executionTimeMillis" : 0,
+                "totalKeysExamined" : 0,
+                "totalDocsExamined" : 331,
+                "executionStages" : {
+                        "stage" : "PROJECTION_SIMPLE",
+                        "nReturned" : 331,
+                        "executionTimeMillisEstimate" : 0,
+                        "works" : 333,
+                        "advanced" : 331,
+                        "needTime" : 1,
+                        "needYield" : 0,
+                        "saveState" : 2,
+                        "restoreState" : 2,
+                        "isEOF" : 1,
+                        "transformBy" : {
+                                "_id" : 0,
+                                "SKU" : "SKU",
+                                "nombre" : "nombre",
+                                "id_categoria" : "id_categoria",
+                                "precio" : "precio",
+                                "cantidad" : "cantidad"
+                        },
+                        "inputStage" : {
+                                "stage" : "COLLSCAN",
+                                "nReturned" : 331,
+                                "executionTimeMillisEstimate" : 0,
+                                "works" : 333,
+                                "advanced" : 331,
+                                "needTime" : 1,
+                                "needYield" : 0,
+                                "saveState" : 2,
+                                "restoreState" : 2,
+                                "isEOF" : 1,
+                                "direction" : "forward",
+                                "docsExamined" : 331
+                        }
+                }
+        },
+        "serverInfo" : {
+                "host" : "DESKTOP-70596F9",
+                "port" : 27017,
+                "version" : "4.2.0",
+                "gitVersion" : "a4b751dcf51dd249c5865812b390cfd1c0129c30"
+        },
+        "ok" : 1
+}
+
+	//Medicion con Indices
+	
+> db.productos.createIndex({"SKU":1,"id_categoria":1});
+{
+        "createdCollectionAutomatically" : false,
+        "numIndexesBefore" : 2,
+        "numIndexesAfter" : 3,
+        "ok" : 1
+}
+> db.productos.find({},{_id:0, SKU:"SKU",nombre:"nombre",id_categoria:"id_categoria",precio:"precio",cantidad:"cantidad"}).explain("executionStats")
+{
+        "queryPlanner" : {
+                "plannerVersion" : 1,
+                "namespace" : "Tienda_Jimena.productos",
+                "indexFilterSet" : false,
+                "parsedQuery" : {
+
+                },
+                "queryHash" : "1E11F942",
+                "planCacheKey" : "1E11F942",
+                "winningPlan" : {
+                        "stage" : "PROJECTION_SIMPLE",
+                        "transformBy" : {
+                                "_id" : 0,
+                                "SKU" : "SKU",
+                                "nombre" : "nombre",
+                                "id_categoria" : "id_categoria",
+                                "precio" : "precio",
+                                "cantidad" : "cantidad"
+                        },
+                        "inputStage" : {
+                                "stage" : "COLLSCAN",
+                                "direction" : "forward"
+                        }
+                },
+                "rejectedPlans" : [ ]
+        },
+        "executionStats" : {
+                "executionSuccess" : true,
+                "nReturned" : 331,
+                "executionTimeMillis" : 0,
+                "totalKeysExamined" : 0,
+                "totalDocsExamined" : 331,
+                "executionStages" : {
+                        "stage" : "PROJECTION_SIMPLE",
+                        "nReturned" : 331,
+                        "executionTimeMillisEstimate" : 0,
+                        "works" : 333,
+                        "advanced" : 331,
+                        "needTime" : 1,
+                        "needYield" : 0,
+                        "saveState" : 2,
+                        "restoreState" : 2,
+                        "isEOF" : 1,
+                        "transformBy" : {
+                                "_id" : 0,
+                                "SKU" : "SKU",
+                                "nombre" : "nombre",
+                                "id_categoria" : "id_categoria",
+                                "precio" : "precio",
+                                "cantidad" : "cantidad"
+                        },
+                        "inputStage" : {
+                                "stage" : "COLLSCAN",
+                                "nReturned" : 331,
+                                "executionTimeMillisEstimate" : 0,
+                                "works" : 333,
+                                "advanced" : 331,
+                                "needTime" : 1,
+                                "needYield" : 0,
+                                "saveState" : 2,
+                                "restoreState" : 2,
+                                "isEOF" : 1,
+                                "direction" : "forward",
+                                "docsExamined" : 331
+                        }
+                }
+        },
+        "serverInfo" : {
+                "host" : "DESKTOP-70596F9",
+                "port" : 27017,
+                "version" : "4.2.0",
+                "gitVersion" : "a4b751dcf51dd249c5865812b390cfd1c0129c30"
+        },
+        "ok" : 1
+}
+	
+
     //Listar productos x categoria
     // Listar categorias de producto (arbol de categorias)
     
     > db.categorias.find({},{_id:0,nombre:"nombre",id_categoria:"id_categoria"})
+	
+	> db.categorias.createIndex({"id_categoria":1,"nombre":1});
+{
+        "createdCollectionAutomatically" : false,
+        "numIndexesBefore" : 1,
+        "numIndexesAfter" : 2,
+        "ok" : 1
+}
+
+	> db.categorias.getIndexes()
+[
+        {
+                "v" : 2,
+                "key" : {
+                        "_id" : 1
+                },
+                "name" : "_id_",
+                "ns" : "Tienda_Jimena.categorias"
+        },
+        {
+                "v" : 2,
+                "key" : {
+                        "id_categoria" : 1,
+                        "nombre" : 1
+                },
+                "name" : "id_categoria_1_nombre_1",
+                "ns" : "Tienda_Jimena.categorias"
+        }
+]
+
+	//Evaluar el indeces Categorias
+	> db.categorias.find({},{_id:0,nombre:"nombre",id_categoria:"id_categoria"}).explain()
+{
+        "queryPlanner" : {
+                "plannerVersion" : 1,
+                "namespace" : "Tienda_Jimena.categorias",
+                "indexFilterSet" : false,
+                "parsedQuery" : {
+
+                },
+                "queryHash" : "A5118C73",
+                "planCacheKey" : "A5118C73",
+                "winningPlan" : {
+                        "stage" : "PROJECTION_SIMPLE",
+                        "transformBy" : {
+                                "_id" : 0,
+                                "nombre" : "nombre",
+                                "id_categoria" : "id_categoria"
+                        },
+                        "inputStage" : {
+                                "stage" : "COLLSCAN",
+                                "direction" : "forward"
+                        }
+                },
+                "rejectedPlans" : [ ]
+        },
+        "serverInfo" : {
+                "host" : "DESKTOP-70596F9",
+                "port" : 27017,
+                "version" : "4.2.0",
+                "gitVersion" : "a4b751dcf51dd249c5865812b390cfd1c0129c30"
+        },
+        "ok" : 1
+}
 
     //Resultado:
             { "id_categoria" : [ 1 ], "nombre" : "Ordenadores" }
@@ -143,7 +524,26 @@
 	> db.productos.find({$and: [{"id_categoria.0":4},{"id_categoria.1":4}]}).count()
 	20
 	
+/* Indices para la busqueda por categorias y propiedades */
+
+	//FALLA - Al no poder indexar dos campos de Arrays --> Nos ha hecho ver que es mejor partir de una bbbdd con más campos - clave: valor directo - Sin Arrays!
+	> db.productos.createIndex({"SKU":1,"id_categoria":1,"propiedades":1});
+{
+        "ok" : 0,
+        "errmsg" : "cannot index parallel arrays [propiedades] [id_categoria]",
+        "code" : 171,
+        "codeName" : "CannotIndexParallelArrays"
+}
+
+	//SOLUCION: Prescindir de uno de los indices, de categorias.
 	
+> db.productos.createIndex({"SKU":1,"propiedades":1});
+{
+        "createdCollectionAutomatically" : false,
+        "numIndexesBefore" : 3,
+        "numIndexesAfter" : 4,
+        "ok" : 1
+}
 
 
   /*    Falla
@@ -201,7 +601,8 @@ db.productos.aggregate(
       }
     ]
   )
-
+  
+  
 	//Resultado limitado en 15 
 	{ "id_user" : 97, "nombre" : { "first" : "Judy", "last" : "Alexander" }, "tel" : "(836) 523-3114" }
 	{ "id_user" : 69, "nombre" : { "first" : "Carol", "last" : "Ayala" }, "tel" : "(931) 418-3433" }
@@ -219,7 +620,102 @@ db.productos.aggregate(
 	{ "id_user" : 58, "nombre" : { "first" : "Meagan", "last" : "Crosby" }, "tel" : "(970) 469-2295" }
 	{ "id_user" : 38, "nombre" : { "first" : "Oconnor", "last" : "Cross" }, "tel" : "(971) 594-3084" }
 	
+	
+	//Medicion sin indices
+  
+	db.usuario.find({},{_id:0, id_user:1, nombre:1, telefono:1 }).explain("executionStats")
+{
+        "queryPlanner" : {
+                "plannerVersion" : 1,
+                "namespace" : "Tienda_Jimena.usuario",
+                "indexFilterSet" : false,
+                "parsedQuery" : {
 
+                },
+                "queryHash" : "88F1E1B4",
+                "planCacheKey" : "88F1E1B4",
+                "winningPlan" : {
+                        "stage" : "PROJECTION_SIMPLE",
+                        "transformBy" : {
+                                "_id" : 0,
+                                "id_user" : 1,
+                                "nombre" : 1,
+                                "telefono" : 1
+                        },
+                        "inputStage" : {
+                                "stage" : "COLLSCAN",
+                                "direction" : "forward"
+                        }
+                },
+                "rejectedPlans" : [ ]
+        },
+        "executionStats" : {
+                "executionSuccess" : true,
+                "nReturned" : 100,
+                "executionTimeMillis" : 0,
+                "totalKeysExamined" : 0,
+                "totalDocsExamined" : 100,
+                "executionStages" : {
+                        "stage" : "PROJECTION_SIMPLE",
+                        "nReturned" : 100,
+                        "executionTimeMillisEstimate" : 0,
+                        "works" : 102,
+                        "advanced" : 100,
+                        "needTime" : 1,
+                        "needYield" : 0,
+                        "saveState" : 0,
+                        "restoreState" : 0,
+                        "isEOF" : 1,
+                        "transformBy" : {
+                                "_id" : 0,
+                                "id_user" : 1,
+                                "nombre" : 1,
+                                "telefono" : 1
+                        },
+                        "inputStage" : {
+                                "stage" : "COLLSCAN",
+                                "nReturned" : 100,
+                                "executionTimeMillisEstimate" : 0,
+                                "works" : 102,
+                                "advanced" : 100,
+                                "needTime" : 1,
+                                "needYield" : 0,
+                                "saveState" : 0,
+                                "restoreState" : 0,
+                                "isEOF" : 1,
+                                "direction" : "forward",
+                                "docsExamined" : 100
+                        }
+                }
+        },
+        "serverInfo" : {
+                "host" : "DESKTOP-70596F9",
+                "port" : 27017,
+                "version" : "4.2.0",
+                "gitVersion" : "a4b751dcf51dd249c5865812b390cfd1c0129c30"
+        },
+        "ok" : 1
+}
+
+	//Añadir Indice a USUARIO
+		db.usuario.createIndex({id_user:1, nombre:1, telefono:1})
+{
+        "createdCollectionAutomatically" : false,
+        "numIndexesBefore" : 1,
+        "numIndexesAfter" : 2,
+        "ok" : 1
+}
+	
+		db.usuario.createIndex({id_user:1, nombre:1})
+{
+        "createdCollectionAutomatically" : false,
+        "numIndexesBefore" : 2,
+        "numIndexesAfter" : 3,
+        "ok" : 1
+}
+
+  
+  
   /* Listar usuarios con carrito y estado del carrito - NO FUNCIONA!! * /
 
   db.usuario.aggregate(
@@ -238,21 +734,7 @@ db.productos.aggregate(
   )*/
 
 
-  db.carrito.aggregate(
-    [
-      {$lookup: { from: 'usuario',
-                  localField: 'id_user.nombre',
-                  foreignField: 'id_user.estado',
-                  as: 'carritos'}
-      },
-    {$unwind: '$carritos'},
-    {$project: {_id:0, nombre: "$id_user.nombre", email: "$id_user.email", estadoCarrito: "$id_user.estado" }
-  }
 
-    ]
-
-  )
-  
 
 /* NO FUNCIONA !!! */
 
@@ -276,9 +758,10 @@ db.productos.aggregate(
 
   /* Producto, precio y si en oferta, por orden alfabético de producto  -- FUNCIONA!!! */
 
-  db.productos.aggregate(
+db.productos.aggregate(
     [
-        {$sort: {"nombre":1}},
+	{$match: {"oferta":true}},
+		{$sort: {"nombre":1}},
         {$project: {"nombre":1, "precio":1, "oferta":1}}
     ]
   )
@@ -293,6 +776,130 @@ db.productos.aggregate(
 
 
  /* CONSULTAS DE CARRITOS */
+ 
+ /* Indice Carrito - Id_user - Estado */
+	db.carrito.createIndex({id_user:1, estado:1})
+	
+	db.carrito.find( {"id_user":5},{_id:0, "id_user":"id_user","estado":"estado"} ).explain("executionStats")
+{
+        "queryPlanner" : {
+                "plannerVersion" : 1,
+                "namespace" : "Tienda_Jimena.carrito",
+                "indexFilterSet" : false,
+                "parsedQuery" : {
+                        "id_user" : {
+                                "$eq" : 5
+                        }
+                },
+                "queryHash" : "D80D4089",
+                "planCacheKey" : "021AB9B0",
+                "winningPlan" : {
+                        "stage" : "PROJECTION_COVERED",
+                        "transformBy" : {
+                                "_id" : 0,
+                                "id_user" : "id_user",
+                                "estado" : "estado"
+                        },
+                        "inputStage" : {
+                                "stage" : "IXSCAN",
+                                "keyPattern" : {
+                                        "id_user" : 1,
+                                        "estado" : 1
+                                },
+                                "indexName" : "id_user_1_estado_1",
+                                "isMultiKey" : false,
+                                "multiKeyPaths" : {
+                                        "id_user" : [ ],
+                                        "estado" : [ ]
+                                },
+                                "isUnique" : false,
+                                "isSparse" : false,
+                                "isPartial" : false,
+                                "indexVersion" : 2,
+                                "direction" : "forward",
+                                "indexBounds" : {
+                                        "id_user" : [
+                                                "[5.0, 5.0]"
+                                        ],
+                                        "estado" : [
+                                                "[MinKey, MaxKey]"
+                                        ]
+                                }
+                        }
+                },
+                "rejectedPlans" : [ ]
+        },
+        "executionStats" : {
+                "executionSuccess" : true,
+                "nReturned" : 2,
+                "executionTimeMillis" : 23,
+                "totalKeysExamined" : 2,
+                "totalDocsExamined" : 0,
+                "executionStages" : {
+                        "stage" : "PROJECTION_COVERED",
+                        "nReturned" : 2,
+                        "executionTimeMillisEstimate" : 0,
+                        "works" : 3,
+                        "advanced" : 2,
+                        "needTime" : 0,
+                        "needYield" : 0,
+                        "saveState" : 0,
+                        "restoreState" : 0,
+                        "isEOF" : 1,
+                        "transformBy" : {
+                                "_id" : 0,
+                                "id_user" : "id_user",
+                                "estado" : "estado"
+                        },
+                        "inputStage" : {
+                                "stage" : "IXSCAN",
+                                "nReturned" : 2,
+                                "executionTimeMillisEstimate" : 0,
+                                "works" : 3,
+                                "advanced" : 2,
+                                "needTime" : 0,
+                                "needYield" : 0,
+                                "saveState" : 0,
+                                "restoreState" : 0,
+                                "isEOF" : 1,
+                                "keyPattern" : {
+                                        "id_user" : 1,
+                                        "estado" : 1
+                                },
+                                "indexName" : "id_user_1_estado_1",
+                                "isMultiKey" : false,
+                                "multiKeyPaths" : {
+                                        "id_user" : [ ],
+                                        "estado" : [ ]
+                                },
+                                "isUnique" : false,
+                                "isSparse" : false,
+                                "isPartial" : false,
+                                "indexVersion" : 2,
+                                "direction" : "forward",
+                                "indexBounds" : {
+                                        "id_user" : [
+                                                "[5.0, 5.0]"
+                                        ],
+                                        "estado" : [
+                                                "[MinKey, MaxKey]"
+                                        ]
+                                },
+                                "keysExamined" : 2,
+                                "seeks" : 1,
+                                "dupsTested" : 0,
+                                "dupsDropped" : 0
+                        }
+                }
+        },
+        "serverInfo" : {
+                "host" : "DESKTOP-70596F9",
+                "port" : 27017,
+                "version" : "4.2.0",
+                "gitVersion" : "a4b751dcf51dd249c5865812b390cfd1c0129c30"
+        },
+        "ok" : 1
+}
 
   /* Carritos ordenados por id_user, estado asc, cantidad de productos, y precio -- FUNCIONA!! */
   db.carrito.aggregate(
@@ -346,24 +953,13 @@ db.carrito.aggregate(
 		])
 		
 		
-	//Añadir Producto al carrtio  - FUNCIONA
+	//Añadir Producto al carrito  - FUNCIONA
 	> db.carrito.insert(    {        "id_user":3,        "estado":"ACTIVO",        "prods.SKU":25,        "prods.qty":5,        "totalqty":5   } )
 	WriteResult({ "nInserted" : 1 })	
 	
 	
 		
-	//Probando:
-	db.carrito.insert(
-   {
-       "id_user":3,
-       "estado":"ACTIVO",
-       "prods.SKU":25,
-       "prods.qty":5,
-       "totalqty":5,
-       var temp=db.productos.find({"SKU":"$prods.SKU"},{"precio":1}),
-       "precio":"$temp["precio"]"
-   }
-)
+
 
 	//Inserción del un carrito
 	> var temp = db.productos.find({"SKU":25},{"_id":0,"precio":1}).toArray() 
@@ -372,3 +968,26 @@ db.carrito.aggregate(
 	> db.carrito.insert({"id_user":3,"estado":"ACTIVO","prods.SKU":25,"prods.qty":5,"totalqty":5, "precio":temp[0].precio} )
 	WriteResult({ "nInserted" : 1 })
 	
+	/* Probando el calculo de los Precios totales 
+	var temp = db.productos.find({},{"_id":0,"SKU":1,"precio":1}).toArray()
+	var temp2 = db.carrito.find({},{"_id":0,"SKU":1,"precio":1}).toArray()
+	///db.carrito.insert({"id_user":3,"estado":"ACTIVO","prods.SKU":25,"prods.qty":5,"totalqty":5, "precio":temp[0].precio} )
+	
+		db.carrito.aggregate([
+		{
+		  $project: {
+		  _id:"$_id",
+		  id_user:"$id_user",
+		  estado:"$estado",
+		  prods:"$prods",
+		  totalqty:{$sum:"$prods.qty"},
+		  
+		  prods.precio:temp[0].precio
+		}
+		},
+		{$out:"carrito"}
+		])
+	
+		VERSION 0.1 --> EN EVOLUCIÓN
+	
+	*/
