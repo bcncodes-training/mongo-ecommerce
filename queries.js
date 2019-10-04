@@ -335,7 +335,7 @@ afegirProducteAlCarreto = (id_cart, id_producte, unitats) => {
     }
     // Comprovar si producte existeix.
     // De totes formes, hem d'obtenir la informació del producte,
-    // ja que el necessitarem
+    // ja que la necessitarem
     
     
 
@@ -379,7 +379,7 @@ afegirProducteAlCarreto = (id_cart, id_producte, unitats) => {
     }
 
     actualitzarPreuCarreto(id_cart);
-}
+};
 
 /**
  * Comprova si existeix un carretó amb una id donada
@@ -611,4 +611,9 @@ obtenirCarretoActiuUsuari = (idUsuari) => {
 
 };
 
-
+/**
+ * Creem els índexs a les col·leccions categories i productes
+ */
+ 
+ db.categories.createIndex ("_id":1, "nom":1, "superior":1);
+ db.productes.createIndex ("_id":1, "categoria_id":1, "preu":1);
