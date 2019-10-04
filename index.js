@@ -98,3 +98,17 @@ añadir producto (si no hay) o sumar (si ya hay) unidad a carro quitar de stock
         { $inc: {"cantidad": -1 } },
         { upsert: true}
       )
+
+ /*     quitar de carro y añadir a stock*/
+  
+      db.cart.update(
+        { "userid":"5d8f8e8f1c9d4400007120d3", state:"A","products.prodid":"5d95a8610d79970740c4ccbe"},
+        { $inc: {"products.qty": -1 } },
+        { upsert: true}
+      )
+      db.product.update(
+        { "_id":ObjectId("5d95a57516a7610740c9667b") },
+        { $inc: {"cantidad": 1 } },
+        { upsert: true}
+      )
+        
