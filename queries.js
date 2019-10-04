@@ -2,7 +2,7 @@
 let afegirProducteAlCarreto, stockSuficient, eliminarProducteCarreto, anularCarreto, comprarCarreto, expirarcarretoPerDies, comprovaSiExisteixProducte, producteFinal, 
     creaNouProducte, editarDadesProducte, canviCategoriaDeProducte, retirarUnitatsProducteStock, afegirUnitatsProducteStock, baixaProducte, obtenirProductesPerNomCategoria, 
     filtrarCampsProducte, comprovaSiExisteixCategoriaNom, comprovaSiExisteixCategoriaId, crearNovaCategoria, editaCategoria, esborraCategoriaPerNom, obtenirFilCategoria, 
-    obtenirDadesCategoria, cercarProductesPerPreu, expirarCarretonsPerDies, actualitzarPreuCarreto, obtenirDadesProducte;
+    obtenirDadesCategoriaNom, cercarProductesPerPreu, expirarCarretonsPerDies, actualitzarPreuCarreto, obtenirDadesProducte;
 
 /**
  * Comprova si existeix una categoria amb un nom donat.
@@ -28,15 +28,15 @@ comprovaSiExisteixCategoriaId = (idCategoria) => {
  * En cas de que la categoria superior donada no existeixi, no l'afegirà
  * 
  * @param nomCategoria 
- * @param superior (Opcional) Categoria pare
+ * @param nomSuperior (Opcional) Nom categoria pare
  */
-crearNovaCategoria = (nomCategoria, superior = '') => {
+crearNovaCategoria = (nomCategoria, nomSuperior = '') => {
 	let categoriaFinal = new Object();
 
 	categoriaFinal.nom = nomCategoria;
 
-	if (existeixCategoria (superior))
-		categoriaFinal.superior = superior;
+	if (comprovaSiExisteixCategoriaNom(nomSuperior))
+		categoriaFinal.superior = nomSuperior;
 
 	db.categories.insert (categoriaFinal);
 };
@@ -48,11 +48,11 @@ crearNovaCategoria = (nomCategoria, superior = '') => {
  * @param valorsCategoria Objecte que té com a claus els camps a modificar i com a valors els nous valors d'aquests camps.
  */
 editaCategoria = (nomCategoria, valorsCategoria) => {
-	if (existeixCategoria (nomCategoria)) {
+	if (comprovaSiExisteixCategoriaNom(nomCategoria)) {
 		if (valorsCategoria.nom) {
 			let nom = valorsCategoria.nom;
 
-			if (!existeixCategoria (nom)) {
+			if (!comprovaSiExisteixCategoriaNom(nom)) {
 				db.categories.update ({"superior" : nomCategoria}, {"$set" : {"superior" : nom}}, {"multi":"true"});
 				db.categories.update ({"nom": nomCategoria}, {"$set" : {"nom" : nom}});
 			}
@@ -61,11 +61,49 @@ editaCategoria = (nomCategoria, valorsCategoria) => {
 		if (valorsCategoria.superior) {
 			let superior = valorsCategoria.superior;
 
-			if (existeixCategoria (superior))
-				db.categories.update ({"nom" : nomCategoria}, {"$set" : {"superior" : superior}});
-		}
+			if (comprovaSiExisteixCategoriaNom(superior)) {
+                db.categories.update ({"nom" : nomCategoria}, {"$set" : {"superior" : superior}});
+            } else {
+                throw `No existeix categoria superior '${valorsCategoria.superior}'`;
+            }
+		} 
 	}
 };
+
+
+/**
+ * Obté un document complet de la categoria amb un nom donat.
+ * 
+ * @param nomCategoria
+ */
+obtenirDadesCategoriaNom = (nomCategoria) => {
+	return db.categories.findOne ({"nom" : nomCategoria});
+};
+
+
+
+/**
+ * Cerca tots els productes amb una categoria amb el nom donat.
+ * 
+ * @param nomCategoria
+ */
+obtenirProductesPerNomCategoria = (nomCategoria) => {
+	if (comprovaSiExisteixCategoriaNom(nomCategoria)) {
+		let categoria_id = obtenirDadesCategoriaNom (nomCategoria)._id;
+		return db.productes.find ({"categoria_id": categoria_id});
+	} else {
+        throw 'Categoria no existeix';
+    }
+};
+
+/**
+ * Comprova si una categoria té productes associats
+ * 
+ * Tenir en compte que això no comprova les subcategories.
+ */
+comprovaSiCategoriaNomTeProductes = (nomCategoria) => {
+    return obtenirProductesPerNomCategoria(nomCategoria).count() > 0;
+}
 
 /**
  * Elimina una categoria amb un nom donat.
@@ -75,16 +113,40 @@ editaCategoria = (nomCategoria, valorsCategoria) => {
  * @param nomCategoria
  */
 esborraCategoriaPerNom = (nomCategoria) => {
-	if (existeixCategoria (nomCategoria)) {
-		let superior = obtenirDadesCategoria (nomCategoria).superior;
+	if (comprovaSiExisteixCategoriaNom(nomCategoria)) {
 
-		if (superior)
-			db.categories.update ({"superior" : nomCategoria}, {"$set" : {"superior" : superior}}, {"multi" : true});
-		else
-			db.categories.update ({"superior" : nomCategoria}, {"$unset" : {"superior" : ""}}, {"multi" : true});
+        if (comprovaSiCategoriaNomTeProductes(nomCategoria)) {
+            throw `No es pot esborrar la categoria '${nomCategoria}': Té productes associats.`;
+        }
 
+		let superior = obtenirDadesCategoriaNom(nomCategoria).superior;
+
+		if (superior) {
+			db.categories.update ({
+                "superior" : nomCategoria
+            }, {
+                "$set" : {
+                    "superior" : superior
+                }
+            }, {
+                "multi" : true
+            });
+        } else {
+			db.categories.update ({
+                
+                "superior" : nomCategoria
+            }, {
+                $unset : {
+                    "superior" : ""
+                }
+            }, {
+                "multi" : true
+            });
+        }
 		db.categories.remove ({"nom" : nomCategoria});
-	}
+	} else {
+        throw "OPERACIÓ D'ESBORRAT FALLIDA: La categoria indicada no existeix";
+    }
 };
 
 /**
@@ -93,7 +155,7 @@ esborraCategoriaPerNom = (nomCategoria) => {
  * @param nomCategoria
  */
 obtenirFilCategoria = (nomCategoria) => {
-	if (existeixCategoria (nomCategoria))
+	if (comprovaSiExisteixCategoriaNom(nomCategoria))
 	{
 		let fil = [nomCategoria];
 
@@ -107,19 +169,12 @@ obtenirFilCategoria = (nomCategoria) => {
 	}
 };
 
-/**
- * Obté un document complet de la categoria amb un nom donat.
- * 
- * @param nomCategoria
- */
-obtenirDadesCategoria = (nomCategoria) => {
-	return db.categories.findOne ({"nom" : nomCategoria});
-};
 
 /**
  * Obté les dades d'un producte amb un codi donat
  * 
  * @param codiProducte
+ * @return Dades del objecte document del producte o null si no existeix.
  */
 obtenirDadesProducte = (codiProducte) => {
     return db.productes.findOne({
@@ -131,6 +186,7 @@ obtenirDadesProducte = (codiProducte) => {
  * Comprova si un producte amb un codi donat existeix.
  *
  * @param codiProducte
+ * @return True si el producte existeix a la col·lecció productes. Altrament, retorna false.
  */
 comprovaSiExisteixProducte = (codiProducte) => {
 	return (db.productes.find ({"_id" : codiProducte}).count() == 1);
@@ -160,16 +216,20 @@ filtrarCampsProducte = (dades) => {
  * 
  */
 creaNouProducte = (codi, categoria, dades) => {
-	if (!comprovaSiExisteixProducte (codi)){
-		if (existeixCategoria (categoria)){
+	if (!comprovaSiExisteixProducte(codi)){
+		if (comprovaSiExisteixCategoriaNom(categoria)){
 			let producteFinal = filtrarCampsProducte (dades);
 
 			producteFinal._id = codi;
-			producteFinal.categoria_id = obtenirDadesCategoria (categoria)._id;
+			producteFinal.categoria_id = obtenirDadesCategoriaNom (categoria)._id;
 
 			db.productes.insert (producteFinal);
-		}
-	}
+		} else {
+            throw `No s'ha pogut inserir el producte: Categoria no existeix`;
+        }
+	} else {
+        throw `No s'ha pogut inserir el producte: Identificador de producte ja existeix`;
+    }
 };
 
 /**
@@ -185,7 +245,9 @@ editarDadesProducte = (codi, dades) => {
 		print (typeof (producteFinal.stock));
 		
 		db.productes.update ({"_id" : codi}, {"$set" : producteFinal});
-	}
+	} else {
+        throw `No s'ha pogut editar el producte: producte a editar no existeix`;
+    }
 };
 
 /**
@@ -196,8 +258,10 @@ editarDadesProducte = (codi, dades) => {
  */
 canviCategoriaDeProducte = (codiProducte, idCategoria) => {
 	if (comprovaSiExisteixProducte(codiProducte) && existeixCategoria(idCategoria)) {
-		db.productes.update ({"_id" : codiProducte}, {"$set" : {"categoria_id" : obtenirDadesCategoria(idCategoria)._id}})
-	}
+		db.productes.update ({"_id" : codiProducte}, {"$set" : {"categoria_id" : obtenirDadesCategoriaNom(idCategoria)._id}})
+	} else {
+        throw `No s'ha pogut editar la categoria del producte: producte i/o categoria no existeix`;
+    }
 };
 
 /**
@@ -206,60 +270,61 @@ canviCategoriaDeProducte = (codiProducte, idCategoria) => {
  * En cas de que no hi hagi unitats en stock suficients, genera un error.
  * 
  * @param codiProducte 
- * @param unitatsVenudes
+ * @param unitats
  */
-retirarUnitatsProducteStock = (codiProducte, unitatsVenudes) => {
+retirarUnitatsProducteStock = (codiProducte, unitats) => {
 	if (comprovaSiExisteixProducte (codiProducte)) {
 		let stock_producte = db.productes.findOne ({"_id" : codiProducte}).stock;
 		
-		stock_producte -= Math.max(unitatsVenudes, 0);
+		stock_producte -= Math.max(unitats, 0);
 		
-		if (stock_producte >= 0)
+		if (stock_producte >= 0) {
 			editarDadesProducte(codiProducte, {"stock" : stock_producte});
-		else
-			throw new Error ("Unitats en stock insuficients");
-	}
+        } else {
+            throw `No s'ha pogut modificar l'stock del producte: Unitats en stock insuficients`;
+        }
+    } else {
+        throw `No s'ha pogut modificar l'stock del producte: producte no existeix`
+    }
 };
 
 /**
  * Afegeix a l'stock un nombre d'unitats d'un producte donat
  * 
  * @param codiProducte
- * @param unitatsComprades
+ * @param unitats
  */
-afegirUnitatsProducteStock = (codiProducte, unitatsComprades) => {
+afegirUnitatsProducteStock = (codiProducte, unitats) => {
 	if (comprovaSiExisteixProducte (codiProducte)) {
 		let stock_producte = db.productes.findOne ({"_id" : codiProducte}).stock;
 		
-		stock_producte += Math.max (unitatsComprades, 0);
+		stock_producte += Math.max (unitats, 0);
 		editarDadesProducte (codiProducte, {"stock" : stock_producte});
-	}
+	}  else {
+        throw `No s'ha pogut modificar l'stock del producte: producte no existeix`
+    }
 };
 
 /**
  * Dóna de baixa un producte amb un codi donat.
  * 
+ * El producte només es donarà de baixa si no té unitats en stock i no està 
+ * associat a cap procés de compra pendent.
+ * 
  * @param codiProducte
  */
 baixaProducte = (codiProducte) => {
-	if (comprovaSiExisteixProducte (codiProducte)) {
-		let stock = db.productes.find ({"_id" : codiProducte}).stock;
+	if (comprovaSiExisteixProducte(codiProducte)) {
 
-		if (!stock)
-			db.productes.remove ({"_id" : codiProducte});
-	}
-};
+        if () {
 
-/**
- * Cerca tots els productes amb una categoria amb el nom donat.
- * 
- * @param nomCategoria
- */
-obtenirProductesPerNomCategoria = (nomCategoria) => {
-	if (existeixCategoria (nomCategoria)) {
-		let categoria_id = obtenirDadesCategoria (nomCategoria)._id;
-		return db.productes.find ({"categoria_id": categoria_id});
-	}
+        }
+
+
+        db.productes.remove({"_id" : codiProducte});
+	} else {
+        throw `No s'ha pogut donar de baixa el producte: producte no existeix`;
+    }
 };
 
 /**
@@ -290,8 +355,13 @@ cercarProductesPerPreu = (preuInferior, preuSuperior) => {
  * @param idCarreto Identificador del carretó donat
  */
 actualitzarPreuCarreto = (idCarreto) => {
-    // Crear subcol·lecció carreto-preuTotal
-    db.carreto.aggregate([
+    // Obtenir preu total
+    let preuTotal = db.carretons.aggregate([
+        {
+            $match: { 
+                "_id": idCarreto 
+            }
+        },
         {
             $group: {
                 $_id: "$_id",
@@ -299,17 +369,10 @@ actualitzarPreuCarreto = (idCarreto) => {
                     $sum: "$productes.preu * $productes.unitats"
                 }
             }
-        },
-        {
-            $out: "cartTotals"
         }
-    ]);
-    // Obtenir de la nova col·lecció el preu total
-    let {preuTotal} =  db.cartTotals.findOne({
-        "_id": idCarreto
-    });
+    ]).preuTotal;
      // Fixar preu total al carreto corresponent
-    db.carreto.update ({
+    db.carretons.update ({
         "_id": idCarreto
     }, {
         $set: {
@@ -334,22 +397,20 @@ afegirProducteAlCarreto = (id_cart, id_producte, unitats) => {
         throw new Error(`no hi ha suficients unitats del producte ${id_producte} en stock`);
     }
     // Comprovar si producte existeix.
-    // De totes formes, hem d'obtenir la informació del producte,
-    // ja que la necessitarem
-    
-    
-
+    let producte = obtenirDadesProducte(id_producte);
         //* utilitzar una funció per a obtenir el producte per la ID: getProducteById(id_producte) 
-    if (!producte) throw new Error (`Producte amb id ${id_producte} no existeix`);
+    if (!producte) {
+        throw new Error(`Producte amb id ${id_producte} no existeix`);
+    };
 
     // Reduir stock
-        // *utilitzar una funció reduirStockProducte(id_producte, unitats)
+    retirarUnitatsProducteStock(id_producte, unitats);
 
     // Comprovem si el producte a introduir al carreto ja ha sigut introduit
-    if (db.carreto.findOne({"_id": id_cart, "productes._id": id_producte })) {
+    if (db.carretons.findOne({"_id": id_cart, "productes._id": id_producte })) {
         // En cas afirmatiu, sumar les unitats.
 
-        db.carreto.update({
+        db.carretons.update({
             "_id": id_cart,
             "productes._id": id_producte
         }, {
@@ -361,7 +422,7 @@ afegirProducteAlCarreto = (id_cart, id_producte, unitats) => {
     } else {
         // En cas contrari, crear entrada.
 
-        db.carreto.update({
+        db.carretons.update({
             "_id": id_cart,
             "productes._id": id_producte
         }, {
@@ -371,7 +432,6 @@ afegirProducteAlCarreto = (id_cart, id_producte, unitats) => {
                     "nom": producte.nom,
                     "preu": producte.preu,
                     "unitats": producte.unitats
-                    // descompte: producte.descompte 
                 }
             }
         });
@@ -379,6 +439,29 @@ afegirProducteAlCarreto = (id_cart, id_producte, unitats) => {
     }
 
     actualitzarPreuCarreto(id_cart);
+};
+
+/**
+ * 
+ */
+comprovaSiAlgunCarretoActiuConteProducte = (id_producte) => {
+    return db.carretons.find({
+        $or: [
+            {
+                estat: {
+                    $exists: false
+                }
+            },
+            {
+                estat: "pendent"
+            }
+        ],
+        productes: { 
+            $elemMatch: { 
+                "_id": id_producte 
+            } 
+        } 
+    }).count() > 0;
 };
 
 /**
@@ -458,7 +541,7 @@ eliminarProducteCarreto = (id_cart, id_producte) =>  {
     let unitats = obtenirUnitatsDeProducteACarreto(id_cart, id_producte);
 
     // Eliminar entrada del producte del carreto:
-    db.carreto.update({
+    db.carretons.update({
         "_id": id_cart
     }, {
         $pull: {
@@ -615,5 +698,5 @@ obtenirCarretoActiuUsuari = (idUsuari) => {
  * Creem els índexs a les col·leccions categories i productes
  */
  
- db.categories.createIndex ("_id":1, "nom":1, "superior":1);
- db.productes.createIndex ("_id":1, "categoria_id":1, "preu":1);
+ db.categories.createIndex ({"_id":1, "nom":1, "superior":1});
+ db.productes.createIndex ({"_id":1, "categoria_id":1, "preu":1});
