@@ -84,3 +84,11 @@ db.product.aggregate(
 {$match:{"_id":"5d95c2170d79970740c4ccc9"}}
 )
 
+/*
+añadir producto al carro si no existe y si existe sumarle una unidad 
+*/
+db.cart.update(
+  { "userid":"5d8f8e8f1c9d4400007120d3", state:"A","products.prodid":"5d95a8610d79970740c4ccbe"},
+  { $inc: {"products.qty": 1 } },
+  { upsert: true}
+)
