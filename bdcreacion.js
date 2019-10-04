@@ -361,4 +361,29 @@ db.products.insertMany(
  )
 
     
-    
+/// Corregir "stock". Todos salen con tallas de calzado y también hay ropa. HECHO
+
+let cambiarStock = db.products.aggregate([{
+    $lookup:
+      {
+        from: "categories",
+        localField: "category_id",
+        foreignField: "_id",
+        as: "Ariadna"
+      }    
+ 
+ }])
+
+cambiarStock.forEach(element => {
+     if(parent="Ropa"){
+        db.products.update(
+            {},
+            {
+                $set:{stock: {XS:1, S:3, M:4, L:1, XL:1}
+                }
+            },
+             { multi: true }
+            )
+     }
+     
+ });

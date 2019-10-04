@@ -76,13 +76,13 @@ db.categories.aggregate(
 
 db.categories.update( {_id: ObjectId("5d964b74c6e92f9e942a7d34")}  , {$set: {ancestors: [ "Hombre", "Unisex" ]}}  )
 
-//Mostrar hilo de Ariadna  
 
+let hiloAriadna = (_idProducto)=>
 db.products.aggregate(
     [
     {$match: 
         {
-            _id: "5d972f1afdbbf3632e43fec4"}
+            _id: _idProducto}
             },
     {
        $lookup:
@@ -90,38 +90,58 @@ db.products.aggregate(
            from: "categories",
            localField: "category_id",
            foreignField: "_id",
-           as: "arrayAlejandria"
+           as: "Ariadna"
          }
     }
     ,
     {
-        $unwind: "$arrayAlejandria"
+        $unwind: "$Ariadna"
     },
     {
-        $unwind: "$arrayAlejandria.ancestors"
+        $unwind: "$Ariadna.ancestors"
     },
     {
-        $project:  {_id:0, "arrayAlejandria.title":1, "arrayAlejandria.parent":1, "arrayAlejandria.ancestors":1}
+        $project:  {_id:0, "Ariadna.title":1, "Ariadna.parent":1, "Ariadna.ancestors":1}
         }
     
     ]
+)
 
+hiloAriadna("5d972f1afdbbf3632e43fec4")
 //Resultado: 
-
 {
-    "arrayAlejandria" : {
+    "Ariadna" : {
         "title" : "Treking Mujer",
         "ancestors" : "Mujer",
         "parent" : "Calzado"
     }
 }
 
+// Generar algunas consultas sobre productos, que puedan ser requeridas por los usuarios 
+// (Buscar por tipo de producto, talla, tamaño, precios, recomendados, ofertas, 
+//     últimas adquisiciones, etc…)
 
-//////////////////////////////////MANTENIMIENTO PRODUCTOS
+//Tipo de producto: 
 
-///Añadir TAGS: 
-
-
+let filtroTipoProducto = (tipoProducto)=> db.products.aggregate([
+    {
+        $lookup:
+             {
+               from: "categories",
+               localField: "category_id",
+               foreignField: "_id",
+               as: "Ariadna"
+             }
+    },
+    {
+        $match: 
+            {$or:[{"Ariadna.parent":tipoProducto},{"Ariadna.title":tipoProducto}, {"Ariadna.ancestors":tipoProducto}]}
+        }
+    
+    ])
+    
+    //Así, se puede buscar cualquier "nivel de categoria":
+    // filtroTipoProducto("Mujer")  filtroTipoProducto("Casual Mujer") filtroTipoProducto("Calzado") 
 
 
 
