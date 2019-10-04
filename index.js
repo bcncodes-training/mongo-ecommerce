@@ -1,6 +1,5 @@
 //collection products
-let allProducts = db.product.aggregate([ { $group: { "_id": "$name", "data": { "$first": "$$ROOT"} } }, { "$project": { "price": "$data.price", "name": "$data.name", "color": "$data.color", "sizes": "$data.sizes", "tags": "$data.tags"} } ] ).pretty()
-
+db.product.aggregate([ { $group: { "_id": "$name", "data": { "$first": "$$ROOT"} } }, { "$project": { "price": "$data.price", "name": "$data.name", "color": "$data.color", "sizes": "$data.sizes", "tags": "$data.tags"} } ] ).pretty()
 
 //enseña los productos destacados por la cantidad de producto disponible que sea menor
 let promo = db.product.aggregate([{$match:{qty:{$gte:180}}},{$group:{_id:"$name", oferta:{$sum:"$discount"}}}])
@@ -28,10 +27,10 @@ db.product.aggregate([{$match: {$or: [ { qty: {  $lt: 150 } }, { qty: { $gte: 18
 { "_id" : "Botella de Agua Plastico Ba1", "disponibles" : 200 }
 { "_id" : "Botella de Agua Acero Inox", "disponibles" : 100 }
 { "_id" : "Botella de Agua Plastico Be1", "disponibles" : 180 }
-> db.product.aggregate([{$match: { qty: {  $lt: 150 } }},{$group:{_id:"$name", disponibles:{$sum:"$qty"}}}])
+db.product.aggregate([{$match: { qty: {  $lt: 150 } }},{$group:{_id:"$name", disponibles:{$sum:"$qty"}}}])
 { "_id" : "Botella de Agua Cristal", "disponibles" : 121 }
 { "_id" : "Botella de Agua Acero Inox", "disponibles" : 100 }
-> db.product.aggregate([{$match: { qty: {  $gte: 180 } }},{$group:{_id:"$name", disponibles:{$sum:"$qty"}, precio:"$discount"}}])
+db.product.aggregate([{$match: { qty: {  $gte: 180 } }},{$group:{_id:"$name", disponibles:{$sum:"$qty"}, precio:"$discount"}}])
 { "_id" : "Botella de Agua Plastico Be1", "disponibles" : 180 }
 { "_id" : "Botella de Agua Plastico Ba1", "disponibles" : 200 }
 
@@ -63,11 +62,11 @@ let all_prod = db.product.aggregate([{$match:{}},{$group:{_id:"$name", oferta:{$
 promo.forEach(function(miDoc) {print(`nombre: {${miDoc._id}} | Precio Oferta: {${miDoc.oferta}}`)})
 
 //Indexación
-db.product.createIndex({”name”:1})
-db.product.createIndex({”price”:1})
-db.product.createIndex({”qty”:1})
-db.product.createIndex({”color”:1})
-db.product.createIndex({”sizes”:1})
+db.product.createIndex({"name":1})
+db.product.createIndex({"price":1})
+db.product.createIndex({"qty":1})
+db.product.createIndex({"color":1})
+db.product.createIndex({"sizes":1})
 
 db.getCollectionNames().forEach(function(product) {
     indexes = db[product].getIndexes();
