@@ -9,3 +9,4 @@ __Conexión a base de datos Mongo Atlas__
 
 Password enviada por pull request. 
 
+![Data modelling](./data_modelling.png "Data modelling")
