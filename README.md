@@ -19,6 +19,9 @@ git checkout "pair"+numero
   - mongodump de la bd (documentos+datos+índices)
 
     C:\Program Files\MongoDB\Server\4.2\bin>mongodump --db=Tienda_Jimena --out=C:/CIFO-MS3/workspace/mongo-ecommerce/BBDD
+    ó 1 solo archivo
+    mongodump --db=Tienda_Jimena --archive=C:/CIFO-MS3/workspace/mongo-ecommerce/BBDD/tiendajimena
+
 
     2019-10-03T11:56:41.526+0200    writing Tienda_Jimena.productos to
     2019-10-03T11:56:41.561+0200    writing Tienda_Jimena.usuario to
@@ -29,24 +32,20 @@ git checkout "pair"+numero
     2019-10-03T11:56:41.869+0200    done dumping Tienda_Jimena.carrito (50 documents)
     2019-10-03T11:56:41.883+0200    done dumping Tienda_Jimena.productos (331 documents)
 
+    /* Por Colección */
+    mongorestore -d Tienda_Jimena -c usuario E:/mongo-ecommerce/BBDD/Tienda_Jimena/usuario.bson
+    mongorestore -d Tienda_Jimena -c carrito E:/mongo-ecommerce/BBDD/Tienda_Jimena/carrito.bson
+    mongorestore -d Tienda_Jimena -c productos E:/mongo-ecommerce/BBDD/Tienda_Jimena/productos.bson
+    mongorestore -d Tienda_Jimena -c categorias E:/mongo-ecommerce/BBDD/Tienda_Jimena/categorias.bson
+
+  /* Toda la BBDD */
+    mongorestore --archive=C:/CIFO-MS3/workspace/mongo-ecommerce/BBDD/tiendajimena
+
+
+
   - queries.js con la información de las queries y los índices creados
 
-  > db.carrito.find().forEach()
-
-  > db.carrito.aggregate(
-    [
-      {$group: 
-        { totalprod: $prods.qty },
-        { $sum }
-      }
-
-    ]
-  )
-
-  db.carrito.update({"totalqty" :"Constantinopla" },
-    { $inc: { quantity: +5, "leidos": 1 } }
- )
-
+  
 
 4. sube los cambios:
 ```script
@@ -76,78 +75,20 @@ __Ejercicio__
   
   -  Generar algunas consultas sobre productos, que puedan ser requeridas por los usuarios (Buscar por tipo de producto, talla, tamaño, precios, recomendados, ofertas, últimas adquisiciones, etc…)
 
-    /* Consultas de producto */
     
-      Productos con oferta
-      Listar datos de un producto:
-      Id_producto, nombre_producto, categoria_producto, precio_unitario, cantidad_disponible, oferta(S/N)
-
-      db.productos.findOne()
-
-
-    Listar productos x categoria
-
-
-      db.productos.aggregate(
-          [
-            {$lookup:{  from:'categorias',
-                        localField:'id_categoria.[0].nombre',
-                        foreignField: 'id_categoria.[0]',
-                        as: 'susCategorias' }
-            },
-            {$sort:{SKU:1}}
-            {$project:{
-              _id: 0, 
-              SKU: "$SKU",
-              articulo: "$nombre",
-              categoria: "$susCategorias.id_categoria"
-             }
-            }
-        ]
-      ) 
-
-
-    > db.productos.aggregate(
-...           [
-...             {$lookup:{  from:'categorias',
-...                         localField:'id_categoria',
-...                         foreignField: 'id_categoria',
-...                         as: 'susCategorias' }
-...             },
-                {$unwind: '$susCategorias'},
-...             {$project:{
-...               _id: 0,
-...               SKU: "$SKU",
-...               articulo: "$nombre",
-...               categoria: "$susCategorias.id_categoria"
-...             }
-...             }
-...
-...           ]
-...       )
-{ "SKU" : 1, "articulo" : "PC AX 4842" }
-{ "SKU" : 3, "articulo" : "PC GTX 449" }
-{ "SKU" : 5, "articulo" : "PC AX 4145" }
-{ "SKU" : 0, "articulo" : "PC ATX 2871" }
-{ "SKU" : 4, "articulo" : "PC GTX 105" }
-{ "SKU" : 6, "articulo" : "PC GTX 4039" }
-{ "SKU" : 8, "articulo" : "PC GMD 1857" }
-{ "SKU" : 2, "articulo" : "PC AX 673" }
-{ "SKU" : 11, "articulo" : "PC ATX 432" }
-{ "SKU" : 10, "articulo" : "PC GTX 2721" }
-{ "SKU" : 9, "articulo" : "PC GMD 3652" }
-{ "SKU" : 7, "articulo" : "PC AX 2365" }
-{ "SKU" : 15, "articulo" : "PC GMD 3551" }
-{ "SKU" : 14, "articulo" : "PC GTX 726" }
-{ "SKU" : 12, "articulo" : "PC ATX 4818" }
-{ "SKU" : 16, "articulo" : "PC GTX 3503" }
-{ "SKU" : 17, "articulo" : "PC ATX 4507" }
-{ "SKU" : 18, "articulo" : "PC GMD 4723" }
-{ "SKU" : 13, "articulo" : "PC AX 1917" }
-{ "SKU" : 19, "articulo" : "PC ATX 940" }
-
   -  Realizar un mantenimiento de la jerarquía de categorías añadiendo una nueva categoría y modificando una categoría. Realizar también las consultas para obtener el hilo de Ariadna de un producto determinado
+
+Insertar categoria en productos
+
+
+db.productos.update({criterio = id_categoria},{new_key:value},{upsert - actualizar, evitar duplicados}, {multi: true - todos})
+
+
+
+
   -  Gestionar el carrito: Añadir un producto al carrito, eliminar un producto del carrito, abandono del carrito sin comprar, pagar.
+
+  * Si usuario invitado genera un carrito, al crear este, tendrá como id_usuario = idSession, hasta que se confirme como cliente y pasamos a actualizar el id_usuario(carrito) = id_usuario(usuario).
 
 
   /*  Añadir producto al carrito */

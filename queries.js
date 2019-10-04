@@ -1,21 +1,5 @@
 - queries.js con la información de las queries y los índices creados
 
-  /*> db.carrito.find().forEach()
-
-  > db.carrito.aggregate(
-    [
-      {$group: 
-        { totalprod: $prods.qty },
-        { $sum }
-      }
-
-    ]
-  )
-
-  db.carrito.update({"totalqty" :"Constantinopla" },
-    { $inc: { quantity: +5, "leidos": 1 } }
- )*/
-
 
  - Generar consultas sobre las colecciones anteriores para llevar a cabo las siguientes operaciones:
   
@@ -83,8 +67,83 @@
             { "id_categoria" : [ 4, 3 ], "nombre" : "Gestion de Proyectos" }
             { "id_categoria" : [ 4, 4 ], "nombre" : "Sistemas operativos" }
 
-    //
+	//Ordenadores (general) - aleatoriamente Sobremesa - Portatiles - Servidores
+	> db.productos.find({"id_categoria.0":1}).count()
+	81
 
+    //  Productos de la categoria Sobremesa
+    db.productos.find({$and: [{"id_categoria.0":1},{"id_categoria.1":1}]}).pretty()
+    db.productos.find({$and: [{"id_categoria.0":1},{"id_categoria.1":1}]}).count()
+	32
+  
+  //Portatiles
+    db.productos.find({$and: [{"id_categoria.0":1},{"id_categoria.1":2}]}).count()
+    22
+	
+	> db.productos.find({$and: [{"id_categoria.0":1},{"id_categoria.1":3}]}).count()
+	27
+
+
+	//Tablets
+	> db.productos.find({$and: [{"id_categoria.0":2}]}).pretty()
+	> db.productos.find({$and: [{"id_categoria.0":2}]}).count()
+	20
+	
+	//Tablets Android
+	> db.productos.find({$and: [{"id_categoria.0":2},{"id_categoria.1":1}]}).count()
+	11
+	
+	//Tablets IOS
+	> db.productos.find({$and: [{"id_categoria.0":2},{"id_categoria.1":2}]}).count()
+	9
+	
+	//Perifericos
+	 { "id_categoria" : [ 3 ], "nombre" : "Perifericos" }
+            { "id_categoria" : [ 3, 1 ], "nombre" : "Monitores" }
+            { "id_categoria" : [ 3, 2 ], "nombre" : "Teclados" }
+				{ "id_categoria" : [ 3, 3 ], "nombre" : "Ratones" }
+				
+	> db.productos.find({"id_categoria.0":3}).count()
+	150	
+	
+		//Monitores
+		> db.productos.find({$and: [{"id_categoria.0":3},{"id_categoria.1":1}]}).count()
+		50
+		
+		//Teclados
+		> db.productos.find({$and: [{"id_categoria.0":3},{"id_categoria.1":2}]}).count()
+		50
+		
+		//Ratones
+		> db.productos.find({$and: [{"id_categoria.0":3},{"id_categoria.1":3}]}).count()
+		50
+	
+	//Libros
+	> db.productos.find({"id_categoria.0":4}).count()
+	80
+	/*Libros" }
+            { "id_categoria" : [ 4, 1 ], "nombre" : "Programacion" }
+            { "id_categoria" : [ 4, 2 ], "nombre" : "BBDDs" }
+            { "id_categoria" : [ 4, 3 ], "nombre" : "Gestion de Proyectos" }
+            { "id_categoria" : [ 4, 4 ], "nombre" : "Sistemas operativos" }
+	*/
+	//Libros de Programacion
+	> db.productos.find({$and: [{"id_categoria.0":4},{"id_categoria.1":1}]}).count()
+	20
+	
+	//Libros de BBDDs
+	> db.productos.find({$and: [{"id_categoria.0":4},{"id_categoria.1":2}]}).count()
+	20
+	
+	//Libros de Gestion de Proyectos
+	> db.productos.find({$and: [{"id_categoria.0":4},{"id_categoria.1":3}]}).count()
+	20
+	
+	//Libros de Sistemas operativos
+	> db.productos.find({$and: [{"id_categoria.0":4},{"id_categoria.1":4}]}).count()
+	20
+	
+	
 
 
   /*    Falla
@@ -110,8 +169,8 @@
 db.productos.aggregate( 
         [             
             {$lookup:{  from:'categorias',
-                        localField:'id_categoria',
-                        foreignField: 'id_categoria',
+                        localField:'id_categoria.0',
+                        foreignField: 'id_categoria.0',
                         as: 'susCategorias' }             
                     },                 
                     {$unwind: '$susCategorias'},             
@@ -126,3 +185,190 @@ db.productos.aggregate(
 
   /*  Añadir producto al carrito */
   /* No Existe carrito del usuario --> crear carrito para usuario */
+
+  /* CONSULTAS DE USUARIOS */
+
+  /* Listar usuarios con su número de tel ordenados alfabéticamente - FUNCIONA!! */
+
+  db.usuario.aggregate(
+    [
+      {$sort: {"nombre.last":1}},
+      
+      {$limit: 15},
+      
+      {$project: {_id:0, id_user:'$id_user', nombre:'$nombre', 
+                  tel: '$telefono'} 
+      }
+    ]
+  )
+
+	//Resultado limitado en 15 
+	{ "id_user" : 97, "nombre" : { "first" : "Judy", "last" : "Alexander" }, "tel" : "(836) 523-3114" }
+	{ "id_user" : 69, "nombre" : { "first" : "Carol", "last" : "Ayala" }, "tel" : "(931) 418-3433" }
+	{ "id_user" : 52, "nombre" : { "first" : "Brandy", "last" : "Baird" }, "tel" : "(831) 581-2323" }
+	{ "id_user" : 76, "nombre" : { "first" : "Collier", "last" : "Baker" }, "tel" : "(982) 432-3661" }
+	{ "id_user" : 71, "nombre" : { "first" : "Augusta", "last" : "Benson" }, "tel" : "(976) 573-2343" }
+	{ "id_user" : 5, "nombre" : { "first" : "Tyler", "last" : "Bernard" }, "tel" : "(830) 566-2659" }
+	{ "id_user" : 10, "nombre" : { "first" : "Melva", "last" : "Blanchard" }, "tel" : "(824) 465-3314" }
+	{ "id_user" : 13, "nombre" : { "first" : "Adams", "last" : "Blevins" }, "tel" : "(816) 426-2314" }
+	{ "id_user" : 61, "nombre" : { "first" : "Clarice", "last" : "Bowen" }, "tel" : "(851) 404-2512" }
+	{ "id_user" : 50, "nombre" : { "first" : "Callie", "last" : "Burt" }, "tel" : "(973) 486-3054" }
+	{ "id_user" : 26, "nombre" : { "first" : "Gina", "last" : "Calderon" }, "tel" : "(983) 415-2466" }
+	{ "id_user" : 90, "nombre" : { "first" : "Jones", "last" : "Chambers" }, "tel" : "(858) 502-2982" }
+	{ "id_user" : 28, "nombre" : { "first" : "Robyn", "last" : "Contreras" }, "tel" : "(958) 456-3316" }
+	{ "id_user" : 58, "nombre" : { "first" : "Meagan", "last" : "Crosby" }, "tel" : "(970) 469-2295" }
+	{ "id_user" : 38, "nombre" : { "first" : "Oconnor", "last" : "Cross" }, "tel" : "(971) 594-3084" }
+	
+
+  /* Listar usuarios con carrito y estado del carrito - NO FUNCIONA!! * /
+
+  db.usuario.aggregate(
+    [
+      {$lookup: { from: 'carrito',
+                  localField: 'id_user.nombre',
+                  foreignField: 'id_user.estado',
+                  as: 'carritos'}
+      },
+    {$unwind: '$carritos'},
+    {$project: {_id:0, nombre: "$id_user.nombre", email: "$id_user.email", estadoCarrito: "$id_user.estado" }
+  }
+
+    ]
+
+  )*/
+
+
+  db.carrito.aggregate(
+    [
+      {$lookup: { from: 'usuario',
+                  localField: 'id_user.nombre',
+                  foreignField: 'id_user.estado',
+                  as: 'carritos'}
+      },
+    {$unwind: '$carritos'},
+    {$project: {_id:0, nombre: "$id_user.nombre", email: "$id_user.email", estadoCarrito: "$id_user.estado" }
+  }
+
+    ]
+
+  )
+  
+
+/* NO FUNCIONA !!! */
+
+  db.carrito.aggregate(
+    [
+      {$lookup: { from: 'usuario',
+                  localField: 'id_user.estado',
+                  foreignField: 'id_user.nombre',
+                  as: 'carritos'}
+      },
+    {$unwind: '$carritos'},
+    {$project: {_id:0, nombre: "$id_user.nombre", email: "$id_user.email", estadoCarrito: "$id_user.estado" }
+  }
+
+    ]
+
+  )
+
+
+  /* CONSULTAS DE PRODUCTOS */
+
+  /* Producto, precio y si en oferta, por orden alfabético de producto  -- FUNCIONA!!! */
+
+  db.productos.aggregate(
+    [
+        {$sort: {"nombre":1}},
+        {$project: {"nombre":1, "precio":1, "oferta":1}}
+    ]
+  )
+
+  /* Producto, precio y si en oferta, agrupados por productos en oferta ordenados alfabéticamente -- FUNCIONA!!! */
+  db.productos.aggregate(
+    [
+        {$sort: {"oferta":-1, "nombre":1}},
+        {$project: {"nombre":1, "precio":1, "oferta":1}}
+    ]
+  )
+
+
+ /* CONSULTAS DE CARRITOS */
+
+  /* Carritos ordenados por id_user, estado asc, cantidad de productos, y precio -- FUNCIONA!! */
+  db.carrito.aggregate(
+    [
+        {$sort: {"estado":1}},
+        {$project: {"id_user":1, "estado":1, "totalqty":1, "precio":1}}
+    ]
+)
+
+
+/* Carritos ordenados por id_user, estado des, cantidad de productos, y precio -- FUNCIONA!! */
+db.carrito.aggregate(
+    [
+        {$sort: {"estado":-1}},
+        {$project: {"id_user":1, "estado":1, "totalqty":1, "precio":1}}
+    ]
+)
+
+// Carritos del usuario 5
+
+	> db.carrito.find( {"id_user":5} )
+
+	> db.carrito.find( {"id_user":5} )
+	{ "_id" : ObjectId("5d95b9f5a564b802642fd248"), "id_user" : 5, "estado" : "PAGADO", "prods" : [ { "SKU" : 128, "qty" : 42 }, { "SKU" : 236, "qty" : 35 }, { "SKU" : 33, "qty" : 47 }, { "SKU" : 255, "qty" : 23 } ], "totalqty" : 147, "precio" : 0 }
+	{ "_id" : ObjectId("5d95b9f5a564b802642fd255"), "id_user" : 5, "estado" : "ACTIVO", "prods" : [ { "SKU" : 186, "qty" : 28 }, { "SKU" : 52, "qty" : 10 }, { "SKU" : 218, "qty" : 13 }, { "SKU" : 307, "qty" : 21 } ], "totalqty" : 72, "precio" : 0 }
+
+//Estado de los carritos de un usuario
+	> db.carrito.find( {"id_user":5},{_id:0, "id_user":"id_user","estado":"estado"} )
+	{ "id_user" : 5, "estado" : "PAGADO" }
+	{ "id_user" : 5, "estado" : "ACTIVO" }
+
+
+
+
+/* GESTION DE CARRITO */
+	
+	//Actualizar Totales 
+	
+			db.carrito.aggregate([
+		{
+		  $project: {
+		  _id:"$_id",
+		  id_user:"$id_user",
+		  estado:"$estado",
+		  prods:"$prods",
+		  totalqty:{$sum:"$prods.qty"},
+		  precio:"$precio"
+		}
+		},
+		{$out:"carrito"}
+		])
+		
+		
+	//Añadir Producto al carrtio  - FUNCIONA
+	> db.carrito.insert(    {        "id_user":3,        "estado":"ACTIVO",        "prods.SKU":25,        "prods.qty":5,        "totalqty":5   } )
+	WriteResult({ "nInserted" : 1 })	
+	
+	
+		
+	//Probando:
+	db.carrito.insert(
+   {
+       "id_user":3,
+       "estado":"ACTIVO",
+       "prods.SKU":25,
+       "prods.qty":5,
+       "totalqty":5,
+       var temp=db.productos.find({"SKU":"$prods.SKU"},{"precio":1}),
+       "precio":"$temp["precio"]"
+   }
+)
+
+	//Inserción del un carrito
+	> var temp = db.productos.find({"SKU":25},{"_id":0,"precio":1}).toArray() 
+	> temp
+	[ { "precio" : "1256.01" } ]
+	> db.carrito.insert({"id_user":3,"estado":"ACTIVO","prods.SKU":25,"prods.qty":5,"totalqty":5, "precio":temp[0].precio} )
+	WriteResult({ "nInserted" : 1 })
+	
