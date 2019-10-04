@@ -1,0 +1,1 @@
+{"options":{},"indexes":[{"v":{"$numberInt":"2"},"key":{"_id":{"$numberInt":"1"}},"name":"_id_","ns":"ecommerce.promociones"},{"v":{"$numberInt":"2"},"key":{"_id":{"$numberDouble":"1.0"},"producto":{"$numberDouble":"1.0"}},"name":"_id_1_producto_1","ns":"ecommerce.promociones"}],"uuid":"210ae0f5d45a432ea26d4fe8619d5a88"}
