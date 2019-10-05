@@ -143,11 +143,50 @@ let filtroTipoProducto = (tipoProducto)=> db.products.aggregate([
     //Así, se puede buscar cualquier "nivel de categoria":
     // filtroTipoProducto("Mujer")  filtroTipoProducto("Casual Mujer") filtroTipoProducto("Calzado") 
 
+let filtroPrecioMin = (precioMin) => 
+    db.products.find(
+    {
+        price:{$lte:precioMin}
+    }
+    
+    )
+    
+       
 
 
+let filtroPrecioMax= (precioMax) =>
+    db.products.find(
+    {
+        price:{$lte:precioMax}
+    }
+    
+    )
+    
+    
+let filtroIntervaloPrecios = (precioMin, precioMax) =>{  
+    db.products.find(
+    {
+        $and:[
+            {price:{$gte:precioMin}},
+            {price:{$lte:precioMax}}
+            ]
+    }
+    
+    ) 
+}
+//Por algún motivo, cuando se encapsula en una función no muestra resultados :(
 
-
-
+// let busquedaPrecio = (precioMin, precioMax) => {
+//     if (precioMin!=undefined && precioMax!=undefined){
+//         filtroIntervaloPrecios(precioMin, precioMax)
+//     };
+//     if (precioMin=undefined && precioMax!=undefined){
+//         filtroPrecioMax(precioMax)
+//     };
+//     if (precioMax=undefined && precioMin!=undefined){
+//         filtroPrecioMin(precioMax)
+//     }
+// }
 
 
 
